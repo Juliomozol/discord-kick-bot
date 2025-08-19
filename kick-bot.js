@@ -9,6 +9,28 @@ const fetch = require('node-fetch'); // se não tiver instalado, rode npm instal
 const app = express();
 const PORT = process.env.PORT || 3000;
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+// Conexão com PostgreSQL via Pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// Listener para erros não tratados no pool
+pool.on('error', (err) => {
+  console.error('Erro não tratado no pool de conexões:', err);
+});
+
+// Criar tabela se não existir
+async function initDb() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS kick_streamers (
+      name TEXT PRIMARY KEY
+    )
+  `);
+}
+
 
 
 // Deploy do slash
@@ -18,12 +40,20 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
     await deploy();
     console.log('✅ Deploy finalizado');
 
+    console.log('🧪 Inicializando banco de dados...');
+    await initDb();
+    console.log('✅ Banco inicializado com tabela pronta');
+
     console.log('🔐 Fazendo login do bot...');
     await client.login(process.env.DISCORD_TOKEN);
+    console.log(`✅ Bot logado com sucesso!`);
+
   } catch (error) {
     console.error('❌ Erro durante inicialização principal:', error);
   }
 })();
+
+
 
 // Conexão com PostgreSQL via Pool
 const pool = new Pool({
