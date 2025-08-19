@@ -1,15 +1,32 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./kick-streamers.db');
-
+const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
+const { Pool } = require('pg'); // substitui sqlite3 pelo pg
 const express = require('express');
+const fetch = require('node-fetch'); // se não tiver instalado, rode npm install node-fetch@2
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
+// Conexão com PostgreSQL via Pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+// Criar tabela se não existir
+async function initDb() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS kick_streamers (
+      name TEXT PRIMARY KEY
+    )
+  `);
+}
+
+// Express config
 app.get('/', (req, res) => {
   res.send('Você não deveria estar vendo essa mensagem!');
 });
@@ -18,69 +35,52 @@ app.listen(PORT, () => {
   console.log(`Servidor web rodando na porta ${PORT}`);
 });
 
-client.once('ready', () => {
-  console.log(`Bot online como ${client.user.tag}`);
-});
-
-// Aqui você adiciona os seus eventos e comandos, ex:
-
-client.on('interactionCreate', async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === 'ping') {
-    await interaction.reply('Pong!');
-  }
-});
-
-// Login do bot
-client.login(process.env.DISCORD_TOKEN);
-
-
-// Cria a tabela se não existir
-db.serialize(() => {
-  db.run("CREATE TABLE IF NOT EXISTS kick_streamers (name TEXT UNIQUE)");
-});
-
-client.commands = new Collection();
-
-// Live status (em memória) para evitar spam de notificações
-let liveStatus = {};
-
-// 🔹 Funções de banco de dados
+// Banco de dados — funções
 
 function addStreamer(name) {
-  return new Promise((resolve, reject) => {
-    const stmt = db.prepare("INSERT OR IGNORE INTO kick_streamers (name) VALUES (?)");
-    stmt.run(name, function (err) {
-      if (err) reject(err);
-      resolve(this.changes > 0); // true se foi adicionado
-    });
-    stmt.finalize();
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await pool.query(
+        "INSERT INTO kick_streamers (name) VALUES ($1) ON CONFLICT DO NOTHING",
+        [name]
+      );
+      resolve(res.rowCount > 0);
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
 function removeStreamer(name) {
-  return new Promise((resolve, reject) => {
-    const stmt = db.prepare("DELETE FROM kick_streamers WHERE name = ?");
-    stmt.run(name, function (err) {
-      if (err) reject(err);
-      resolve(this.changes > 0); // true se foi removido
-    });
-    stmt.finalize();
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await pool.query(
+        "DELETE FROM kick_streamers WHERE name = $1",
+        [name]
+      );
+      resolve(res.rowCount > 0);
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
 function listStreamers() {
-  return new Promise((resolve, reject) => {
-    db.all("SELECT name FROM kick_streamers", [], (err, rows) => {
-      if (err) reject(err);
-      const names = rows.map(row => row.name);
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res = await pool.query("SELECT name FROM kick_streamers");
+      const names = res.rows.map(row => row.name);
       resolve(names);
-    });
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
-// 🔹 Checar se streamer está ao vivo na Kick
+// Live status (em memória) para evitar spam de notificações
+let liveStatus = {};
+
+// Função para checar se streamer está ao vivo (igual ao seu original)
 async function checkLive(streamer) {
   try {
     const res = await fetch(`https://kick.com/api/v2/channels/${streamer}`, {
@@ -103,7 +103,7 @@ async function checkLive(streamer) {
   }
 }
 
-// 🔹 Enviar notificação para o Discord com embed
+// Notificação embed no Discord (igual seu código)
 async function notifyLive(streamer) {
   const channel = await client.channels.fetch(process.env.CHANNEL_ID);
   
@@ -119,8 +119,6 @@ async function notifyLive(streamer) {
       const data = await res.json();
       
       if (data.livestream) {
-        const { EmbedBuilder } = require('discord.js');
-        
         // Extrair URL da thumbnail corretamente
         let thumbnailUrl = null;
         if (data.livestream.thumbnail) {
@@ -162,7 +160,7 @@ async function notifyLive(streamer) {
   }
 }
 
-// 🔹 Checagem periódica de lives
+// Checagem periódica de lives (igual seu código)
 async function periodicCheck() {
   const streamers = await listStreamers();
   for (const streamer of streamers) {
@@ -173,16 +171,19 @@ async function periodicCheck() {
     } else if (!isLive) {
       liveStatus[streamer] = false;
     }
-    // Delay entre requests para não sobrecarregar a API
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
-  setTimeout(periodicCheck, 5 * 60 * 1000); // a cada 5 minutos
+  setTimeout(periodicCheck, 5 * 60 * 1000);
 }
 
-// 🔹 Comandos Slash
+// Comandos Slash (mantidos igual)
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
   const { commandName } = interaction;
+
+  if (commandName === 'ping') {
+    await interaction.reply('Pong!');
+  }
 
   if (commandName === 'kickadd') {
     await interaction.deferReply();
@@ -253,9 +254,9 @@ client.on('interactionCreate', async interaction => {
       await interaction.editReply(`❌ Erro ao verificar o streamer **${streamerName}**. Tente novamente.`);
     }
   }
+
   if (commandName === 'live') {
     await interaction.deferReply({ flags: 1 << 6 });
-
 
     const streamers = await listStreamers();
     const liveStreamers = [];
@@ -278,18 +279,18 @@ client.on('interactionCreate', async interaction => {
         timestamp: new Date().toISOString()
       };
 
-      // Envia o embed no canal onde o comando foi usado
       await interaction.channel.send({ embeds: [embed] });
-
-      // Responde ao usuário que a lista foi enviada
       await interaction.editReply('✅ Lista de lives enviada neste canal.');
     }
   }
 });
 
-// 🔹 Quando o bot estiver pronto
-client.once('ready', () => {
+// Bot ready
+client.once('ready', async () => {
   console.log(`Kick Bot online como ${client.user.tag}`);
-  periodicCheck(); // inicia a verificação de lives
+  await initDb();
+  periodicCheck();
 });
 
+// Login
+client.login(process.env.DISCORD_TOKEN);
