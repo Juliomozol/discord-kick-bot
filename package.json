@@ -2,9 +2,9 @@
   "name": "nodejs",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "kick-bot.js",
   "scripts": {
-  "start": "node index.js"
+  "start": "node kick-bot.js"
 },
   "keywords": [],
   "author": "",
