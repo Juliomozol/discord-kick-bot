@@ -5,12 +5,12 @@ const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord
 const { Pool } = require('pg'); // substitui sqlite3 pelo pg
 const express = require('express');
 const fetch = require('node-fetch'); // se não tiver instalado, rode npm install node-fetch@2
-
 const app = express();
 const PORT = process.env.PORT || 3000;
-
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
- // Deploy do slash
+
+
+// Deploy do slash
 (async () => {
   await deploy(); // espera o deploy terminar
 
