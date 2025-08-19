@@ -14,19 +14,14 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // Deploy do slash
 (async () => {
   try {
-    console.log('⏳ Iniciando deploy...');
+    console.log('🧪 Chamando função deploy...');
     await deploy();
     console.log('✅ Deploy finalizado');
 
+    console.log('🔐 Fazendo login do bot...');
     await client.login(process.env.DISCORD_TOKEN);
-
-    client.once('ready', async () => {
-      console.log(`Kick Bot online como ${client.user.tag}`);
-      await initDb();
-      periodicCheck();
-    });
   } catch (error) {
-    console.error('Erro durante inicialização:', error);
+    console.error('❌ Erro durante inicialização principal:', error);
   }
 })();
 
