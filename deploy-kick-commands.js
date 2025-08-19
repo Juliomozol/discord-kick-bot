@@ -49,6 +49,7 @@ async function deploy() {
     );
     console.log('✅ Comandos atualizados com sucesso!');
   } catch (error) {
-    console.error('❌ Erro ao atualizar comandos:', error);
+  console.error('❌ Erro ao atualizar comandos:', error);
+  throw error; // Propaga o erro para ser tratado fora
   }
 }
