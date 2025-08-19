@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('./deploy-kick-commands');
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 
 // Lista de comandos
