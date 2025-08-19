@@ -1,7 +1,6 @@
 require('dotenv').config();
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 
-// Lista de comandos
 const commands = [
   new SlashCommandBuilder()
     .setName('kickadd')
@@ -37,12 +36,11 @@ const commands = [
   new SlashCommandBuilder()
     .setName('live')
     .setDescription('Mostra todos os streamers da Kick que estão online agora')
-]
-.map(command => command.toJSON());
+].map(command => command.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
-(async () => {
+async function deployCommands() {
   try {
     console.log('📦 Atualizando comandos Slash...');
     await rest.put(
@@ -53,4 +51,6 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
   } catch (error) {
     console.error('❌ Erro ao atualizar comandos:', error);
   }
-})();
+}
+
+module.exports = { deployCommands };
