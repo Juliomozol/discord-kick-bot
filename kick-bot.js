@@ -52,15 +52,20 @@ async function initDb() {
     console.error('❌ Erro durante inicialização principal:', error);
   }
 })();
+client.on('ready', async () => {
+  console.log(`🚀 Bot está online como ${client.user.tag}`);
 
-// Criar tabela se não existir
-async function initDb() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS kick_streamers (
-      name TEXT PRIMARY KEY
-    )
-  `);
-}
+  try {
+    await initDb();
+    console.log('✅ Tabela kick_streamers verificada/criada.');
+
+    periodicCheck(); // ← ESSENCIAL
+    console.log('🔁 Checagem periódica de lives iniciada.');
+
+  } catch (err) {
+    console.error('❌ Erro ao iniciar verificação periódica:', err);
+  }
+});
 
 // Express config
 app.get('/', (req, res) => {
