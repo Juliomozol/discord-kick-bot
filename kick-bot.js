@@ -53,16 +53,6 @@ async function initDb() {
   }
 })();
 
-
-
-// Conexão com PostgreSQL via Pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
-
 // Criar tabela se não existir
 async function initDb() {
   await pool.query(`
