@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const { deploy } = require('./deploy-kick-commands');
+console.log('🧪 Tipo da função deploy:', typeof deploy);
 const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
 const { Pool } = require('pg'); // substitui sqlite3 pelo pg
 const express = require('express');
