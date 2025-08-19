@@ -12,17 +12,21 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 // Deploy do slash
 (async () => {
-  console.log('⏳ Iniciando deploy...');
-  await deploy();
-  console.log('✅ Deploy finalizado');
+  try {
+    console.log('⏳ Iniciando deploy...');
+    await deploy();
+    console.log('✅ Deploy finalizado');
 
-  await client.login(process.env.DISCORD_TOKEN);
+    await client.login(process.env.DISCORD_TOKEN);
 
-  client.once('ready', async () => {
-    console.log(`Kick Bot online como ${client.user.tag}`);
-    await initDb();
-    periodicCheck();
-  });
+    client.once('ready', async () => {
+      console.log(`Kick Bot online como ${client.user.tag}`);
+      await initDb();
+      periodicCheck();
+    });
+  } catch (error) {
+    console.error('Erro durante inicialização:', error);
+  }
 })();
 
 // Conexão com PostgreSQL via Pool
