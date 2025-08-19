@@ -38,11 +38,10 @@ const commands = [
     .setDescription('Mostra todos os streamers da Kick que estão online agora')
 ].map(command => command.toJSON());
 
-const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
-
-async function deployCommands() {
+async function deploy() {
+  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
   try {
-    console.log('📦 Atualizando comandos Slash...');
+    console.log('🚀 Atualizando comandos Slash...');
     await rest.put(
       Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
       { body: commands }
@@ -53,4 +52,4 @@ async function deployCommands() {
   }
 }
 
-module.exports = { deployCommands };
+module.exports = { deploy };
