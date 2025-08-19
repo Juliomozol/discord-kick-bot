@@ -1,5 +1,6 @@
 require('dotenv').config();
-require('./deploy-kick-commands');
+
+const { deploy } = require('./deploy-kick-commands');
 const { Client, GatewayIntentBits, Collection, EmbedBuilder } = require('discord.js');
 const { Pool } = require('pg'); // substitui sqlite3 pelo pg
 const express = require('express');
@@ -9,6 +10,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+ // Deploy do slash
+(async () => {
+  await deploy(); // espera o deploy terminar
+
+  await client.login(process.env.DISCORD_TOKEN);
+
+  client.once('ready', async () => {
+    console.log(`Kick Bot online como ${client.user.tag}`);
+    await initDb();
+    periodicCheck();
+  });
+})();
 
 // Conexão com PostgreSQL via Pool
 const pool = new Pool({
