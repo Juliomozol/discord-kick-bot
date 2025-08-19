@@ -1,6 +1,22 @@
 require('dotenv').config();
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 
+async function deploy() {
+  console.log('🚀 Iniciando deploy dos comandos...');
+  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+  try {
+    console.log('🚀 Atualizando comandos Slash...');
+    await rest.put(
+      Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+      { body: commands }
+    );
+    console.log('✅ Comandos atualizados com sucesso!');
+  } catch (error) {
+  console.error('❌ Erro ao atualizar comandos:', error);
+  throw error; // Propaga o erro para ser tratado fora
+  }
+}
+
 const commands = [
   new SlashCommandBuilder()
     .setName('kickadd')
@@ -38,18 +54,5 @@ const commands = [
     .setDescription('Mostra todos os streamers da Kick que estão online agora')
 ].map(command => command.toJSON());
 
-async function deploy() {
-  console.log('🚀 Iniciando deploy dos comandos...');
-  const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
-  try {
-    console.log('🚀 Atualizando comandos Slash...');
-    await rest.put(
-      Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-      { body: commands }
-    );
-    console.log('✅ Comandos atualizados com sucesso!');
-  } catch (error) {
-  console.error('❌ Erro ao atualizar comandos:', error);
-  throw error; // Propaga o erro para ser tratado fora
-  }
-}
+module.exports = { deploy };
+
