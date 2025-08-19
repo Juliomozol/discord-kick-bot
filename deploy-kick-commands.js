@@ -39,6 +39,7 @@ const commands = [
 ].map(command => command.toJSON());
 
 async function deploy() {
+  console.log('🚀 Iniciando deploy dos comandos...');
   const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
   try {
     console.log('🚀 Atualizando comandos Slash...');
@@ -51,5 +52,3 @@ async function deploy() {
     console.error('❌ Erro ao atualizar comandos:', error);
   }
 }
-
-module.exports = { deploy };
