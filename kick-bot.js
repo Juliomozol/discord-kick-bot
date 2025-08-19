@@ -299,12 +299,6 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-// Bot ready
-client.once('ready', async () => {
-  console.log(`Kick Bot online como ${client.user.tag}`);
-  await initDb();
-  periodicCheck();
-});
 
 // Login
 client.login(process.env.DISCORD_TOKEN);
