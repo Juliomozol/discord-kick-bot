@@ -12,7 +12,9 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 // Deploy do slash
 (async () => {
-  await deploy(); // espera o deploy terminar
+  console.log('⏳ Iniciando deploy...');
+  await deploy();
+  console.log('✅ Deploy finalizado');
 
   await client.login(process.env.DISCORD_TOKEN);
 
