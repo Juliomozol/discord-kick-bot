@@ -178,7 +178,7 @@ async function notifyLive(streamer) {
         
         const embed = new EmbedBuilder()
           .setColor('#53FC18')
-          .setTitle(`${data.user.username} is now live on Kick!`)
+          .setTitle(`${data.user.username} está ao vivo pela Kick!`)
           .setDescription(`**${data.livestream.session_title || 'Live sem título'}**\n\nPlaying ${categoria}`)
           .addFields(
             { name: 'Viewers', value: data.livestream.viewer_count?.toString() || '0', inline: true }
@@ -188,7 +188,7 @@ async function notifyLive(streamer) {
           .setURL(`https://kick.com/${streamer}`)
           .setTimestamp();
 
-        channel.send({ content: `🟢 **${data.user.username}** is now live on Kick!`, embeds: [embed] });
+        channel.send({ content: `🟢 **${data.user.username}** está ao vivo pela Kick!`, embeds: [embed] });
       } else {
         channel.send(`🟢 **${streamer}** está ao vivo na Kick! Assista agora: https://kick.com/${streamer}`);
       }
