@@ -188,7 +188,7 @@ async function notifyLive(streamer) {
           .setURL(`https://kick.com/${streamer}`)
           .setTimestamp();
 
-        channel.send({ content: `🟢 **${data.user.username}** está ao vivo pela Kick!`, embeds: [embed] });
+        channel.send({ content: `@everyone 🟢 **${data.user.username}** está ao vivo pela Kick!`, embeds: [embed] });
       } else {
         channel.send(`🟢 **${streamer}** está ao vivo na Kick! Assista agora: https://kick.com/${streamer}`);
       }
