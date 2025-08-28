@@ -181,8 +181,6 @@ async function notifyLive(streamer) {
           .setTitle(`${data.user.username} está ao vivo pela Kick!`)
           .setDescription(`**${data.livestream.session_title || 'Live sem título'}**\n\nPlaying ${categoria}`)
           .addFields(
-            { name: 'Viewers', value: data.livestream.viewer_count?.toString() || '0', inline: true }
-          )
           .setThumbnail(data.user.profile_pic || null)
           .setImage(thumbnailUrl)
           .setURL(`https://kick.com/${streamer}`)
